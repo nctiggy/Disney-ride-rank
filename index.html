@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Disney Ride Ranker</title>
+<style>
+  :root {
+    --bg: #0f0f23;
+    --card-bg: #1a1a2e;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --text: #eee;
+    --text-dim: #888;
+    --disneyland: #1e88e5;
+    --california: #ff8f00;
+    --magic-kingdom: #7b1fa2;
+    --epcot: #00897b;
+    --hollywood: #c62828;
+    --animal-kingdom: #2e7d32;
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .screen { display: none; padding: 20px; max-width: 500px; margin: 0 auto; }
+  .screen.active { display: flex; flex-direction: column; min-height: 100dvh; }
+
+  /* ---- Start Screen ---- */
+  #start-screen { align-items: center; justify-content: center; gap: 24px; text-align: center; }
+  #start-screen h1 { font-size: 2rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  #start-screen p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.5; }
+
+  .park-toggles { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .park-toggle {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card-bg); padding: 14px 16px; border-radius: var(--radius);
+    cursor: pointer; user-select: none; transition: transform 0.1s;
+  }
+  .park-toggle:active { transform: scale(0.97); }
+  .park-toggle input { display: none; }
+  .park-toggle .check {
+    width: 24px; height: 24px; border-radius: 6px;
+    border: 2px solid #444; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.15s;
+  }
+  .park-toggle input:checked + .check { background: var(--accent); border-color: var(--accent); }
+  .park-toggle input:checked + .check::after { content: '✓'; color: #fff; font-size: 14px; font-weight: bold; }
+  .park-toggle .park-label { text-align: left; }
+  .park-toggle .park-name { font-weight: 600; font-size: 0.95rem; }
+  .park-toggle .park-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px;
+  }
+
+  .btn {
+    padding: 16px 32px; border: none; border-radius: var(--radius);
+    font-size: 1.1rem; font-weight: 700; cursor: pointer;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; width: 100%; max-width: 320px;
+    transition: transform 0.1s, opacity 0.15s;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.4; pointer-events: none; }
+
+  /* ---- Ride Selection Screen ---- */
+  #select-screen { gap: 16px; }
+  #select-screen h2 { font-size: 1.3rem; text-align: center; }
+  #select-screen .subtitle { color: var(--text-dim); text-align: center; font-size: 0.85rem; margin-bottom: 4px; }
+
+  .select-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 4px; }
+  .select-actions button {
+    background: var(--card-bg); color: var(--text-dim); border: 1px solid #333;
+    padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; cursor: pointer;
+  }
+
+  .park-group { margin-bottom: 12px; }
+  .park-group-header {
+    font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 8px 0 6px; position: sticky; top: 0; background: var(--bg); z-index: 2;
+  }
+  .ride-list { display: flex; flex-direction: column; gap: 6px; }
+  .ride-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card-bg); padding: 12px 14px; border-radius: 12px;
+    cursor: pointer; user-select: none; transition: transform 0.1s;
+  }
+  .ride-item:active { transform: scale(0.97); }
+  .ride-item input { display: none; }
+  .ride-item .check {
+    width: 22px; height: 22px; border-radius: 6px;
+    border: 2px solid #444; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.15s;
+  }
+  .ride-item input:checked + .check { background: var(--accent); border-color: var(--accent); }
+  .ride-item input:checked + .check::after { content: '✓'; color: #fff; font-size: 12px; font-weight: bold; }
+  .ride-item .ride-name { font-size: 0.9rem; }
+
+  .ride-scroll { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(transparent, var(--bg) 20%);
+    display: flex; justify-content: center;
+  }
+  .bottom-bar .btn { max-width: 500px; }
+
+  /* ---- Compare Screen ---- */
+  #compare-screen { gap: 16px; justify-content: center; }
+
+  .progress-area { text-align: center; }
+  .progress-label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px; }
+  .progress-bar {
+    width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 3px; transition: width 0.3s ease;
+  }
+
+  .vs-label {
+    text-align: center; font-size: 1.5rem; font-weight: 800;
+    color: var(--text-dim); margin: 4px 0;
+  }
+
+  .compare-card {
+    flex: 1; min-height: 160px; max-height: 220px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--card-bg); border-radius: var(--radius); padding: 24px 16px;
+    cursor: pointer; user-select: none; transition: transform 0.12s, box-shadow 0.12s;
+    border: 3px solid transparent; text-align: center; gap: 10px;
+  }
+  .compare-card:active { transform: scale(0.95); }
+  .compare-card .ride-park {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 4px 10px; border-radius: 20px; font-weight: 600;
+  }
+  .compare-card .ride-title { font-size: 1.3rem; font-weight: 700; line-height: 1.3; }
+  .compare-card.pop { animation: pop 0.25s ease; }
+  @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
+
+  /* ---- Results Screen ---- */
+  #results-screen { gap: 16px; padding-bottom: 100px; }
+  #results-screen h2 {
+    text-align: center; font-size: 1.4rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .result-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card-bg); padding: 14px 16px; border-radius: 12px;
+  }
+  .result-rank {
+    font-size: 1.1rem; font-weight: 800; min-width: 32px; text-align: center;
+    color: var(--text-dim);
+  }
+  .result-rank.gold { color: #ffd700; }
+  .result-rank.silver { color: #c0c0c0; }
+  .result-rank.bronze { color: #cd7f32; }
+  .result-info { flex: 1; }
+  .result-info .ride-name { font-weight: 600; font-size: 0.95rem; }
+  .result-info .ride-park-tag {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+    opacity: 0.7; margin-top: 2px;
+  }
+
+  .share-area { text-align: center; margin-top: 8px; }
+  .share-area .btn { max-width: 280px; font-size: 0.95rem; padding: 14px 24px; }
+  .restart-link {
+    display: inline-block; margin-top: 16px; color: var(--text-dim);
+    font-size: 0.85rem; cursor: pointer; text-decoration: underline;
+  }
+
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: #333; color: #fff; padding: 10px 20px; border-radius: 10px;
+    font-size: 0.85rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 99;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ===== START SCREEN ===== -->
+<div id="start-screen" class="screen active">
+  <h1>Disney Ride Ranker</h1>
+  <p>Pick your favorite between two rides, and we'll build your ultimate ranking.</p>
+
+  <div class="park-toggles" id="park-toggles"></div>
+
+  <button class="btn" id="btn-start" disabled>Choose Your Rides</button>
+</div>
+
+<!-- ===== RIDE SELECTION SCREEN ===== -->
+<div id="select-screen" class="screen">
+  <h2>Which rides have you been on?</h2>
+  <p class="subtitle">Only check rides you've actually experienced</p>
+  <div class="select-actions">
+    <button onclick="selectAllRides()">Select All</button>
+    <button onclick="deselectAllRides()">Deselect All</button>
+  </div>
+  <div class="ride-scroll" id="ride-scroll"></div>
+  <div class="bottom-bar">
+    <button class="btn" id="btn-begin" disabled>Start Ranking (<span id="ride-count">0</span> rides)</button>
+  </div>
+</div>
+
+<!-- ===== COMPARE SCREEN ===== -->
+<div id="compare-screen" class="screen">
+  <div class="progress-area">
+    <div class="progress-label" id="progress-label">Comparison 0 of ~0</div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+
+  <div class="compare-card" id="card-a" onclick="pick(0)">
+    <span class="ride-park" id="park-a"></span>
+    <span class="ride-title" id="title-a"></span>
+  </div>
+
+  <div class="vs-label">VS</div>
+
+  <div class="compare-card" id="card-b" onclick="pick(1)">
+    <span class="ride-park" id="park-b"></span>
+    <span class="ride-title" id="title-b"></span>
+  </div>
+</div>
+
+<!-- ===== RESULTS SCREEN ===== -->
+<div id="results-screen" class="screen">
+  <h2>Your Disney Ride Ranking</h2>
+  <div id="results-list"></div>
+  <div class="share-area">
+    <button class="btn" onclick="shareResults()">Copy Results to Clipboard</button>
+    <span class="restart-link" onclick="restart()">Start Over</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// RIDE DATA
+// ============================================================
+const PARKS = [
+  { id: 'disneyland', name: 'Disneyland', color: '#1e88e5' },
+  { id: 'california',  name: 'California Adventure', color: '#ff8f00' },
+  { id: 'magic-kingdom', name: 'Magic Kingdom', color: '#7b1fa2' },
+  { id: 'epcot', name: 'EPCOT', color: '#00897b' },
+  { id: 'hollywood', name: 'Hollywood Studios', color: '#c62828' },
+  { id: 'animal-kingdom', name: 'Animal Kingdom', color: '#2e7d32' },
+];
+
+const RIDES = [
+  // --- Disneyland ---
+  { name: 'Space Mountain', park: 'disneyland' },
+  { name: 'Matterhorn Bobsleds', park: 'disneyland' },
+  { name: 'Indiana Jones Adventure', park: 'disneyland' },
+  { name: 'Pirates of the Caribbean', park: 'disneyland' },
+  { name: 'Haunted Mansion', park: 'disneyland' },
+  { name: 'Big Thunder Mountain Railroad', park: 'disneyland' },
+  { name: 'Splash Mountain', park: 'disneyland' },
+  { name: "Buzz Lightyear Astro Blasters", park: 'disneyland' },
+  { name: "Star Tours", park: 'disneyland' },
+  { name: "Rise of the Resistance", park: 'disneyland' },
+  { name: "Millennium Falcon: Smugglers Run", park: 'disneyland' },
+  { name: "It's a Small World", park: 'disneyland' },
+  { name: "Mr. Toad's Wild Ride", park: 'disneyland' },
+  { name: "Alice in Wonderland", park: 'disneyland' },
+  { name: "Roger Rabbit's Car Toon Spin", park: 'disneyland' },
+  { name: "Finding Nemo Submarine Voyage", park: 'disneyland' },
+  { name: "Jungle Cruise", park: 'disneyland' },
+
+  // --- California Adventure ---
+  { name: 'Radiator Springs Racers', park: 'california' },
+  { name: 'Guardians of the Galaxy – Mission: BREAKOUT!', park: 'california' },
+  { name: 'Incredicoaster', park: 'california' },
+  { name: 'Soarin\' Around the World', park: 'california' },
+  { name: 'Grizzly River Run', park: 'california' },
+  { name: 'Toy Story Midway Mania!', park: 'california' },
+  { name: 'WEB SLINGERS: A Spider-Man Adventure', park: 'california' },
+  { name: "Monsters, Inc. Mike & Sulley to the Rescue!", park: 'california' },
+  { name: "Luigi's Rollickin' Roadsters", park: 'california' },
+  { name: "Goofy's Sky School", park: 'california' },
+  { name: 'Pixar Pal-A-Round', park: 'california' },
+  { name: 'Little Mermaid – Ariel\'s Undersea Adventure', park: 'california' },
+  { name: 'Emotional Whirlwind', park: 'california' },
+
+  // --- Magic Kingdom ---
+  { name: 'Space Mountain', park: 'magic-kingdom' },
+  { name: 'Big Thunder Mountain Railroad', park: 'magic-kingdom' },
+  { name: 'Tiana\'s Bayou Adventure', park: 'magic-kingdom' },
+  { name: 'Pirates of the Caribbean', park: 'magic-kingdom' },
+  { name: 'Haunted Mansion', park: 'magic-kingdom' },
+  { name: 'Seven Dwarfs Mine Train', park: 'magic-kingdom' },
+  { name: 'TRON Lightcycle / Run', park: 'magic-kingdom' },
+  { name: "Buzz Lightyear's Space Ranger Spin", park: 'magic-kingdom' },
+  { name: "Peter Pan's Flight", park: 'magic-kingdom' },
+  { name: "It's a Small World", park: 'magic-kingdom' },
+  { name: 'Jungle Cruise', park: 'magic-kingdom' },
+  { name: "Under the Sea – Journey of The Little Mermaid", park: 'magic-kingdom' },
+  { name: "The Barnstormer", park: 'magic-kingdom' },
+  { name: "The Magic Carpets of Aladdin", park: 'magic-kingdom' },
+  { name: "Tomorrowland Speedway", park: 'magic-kingdom' },
+  { name: "The PeopleMover", park: 'magic-kingdom' },
+
+  // --- EPCOT ---
+  { name: 'Guardians of the Galaxy: Cosmic Rewind', park: 'epcot' },
+  { name: 'Test Track', park: 'epcot' },
+  { name: 'Frozen Ever After', park: 'epcot' },
+  { name: 'Soarin\' Around the World', park: 'epcot' },
+  { name: 'Remy\'s Ratatouille Adventure', park: 'epcot' },
+  { name: 'Spaceship Earth', park: 'epcot' },
+  { name: 'Living with the Land', park: 'epcot' },
+  { name: 'The Seas with Nemo & Friends', park: 'epcot' },
+  { name: 'Journey of Water – Inspired by Moana', park: 'epcot' },
+  { name: 'Mission: SPACE', park: 'epcot' },
+
+  // --- Hollywood Studios ---
+  { name: 'Rise of the Resistance', park: 'hollywood' },
+  { name: 'Millennium Falcon: Smugglers Run', park: 'hollywood' },
+  { name: "Tower of Terror", park: 'hollywood' },
+  { name: 'Slinky Dog Dash', park: 'hollywood' },
+  { name: "Rock 'n' Roller Coaster", park: 'hollywood' },
+  { name: 'Toy Story Mania!', park: 'hollywood' },
+  { name: 'Mickey & Minnie\'s Runaway Railway', park: 'hollywood' },
+  { name: 'Alien Swirling Saucers', park: 'hollywood' },
+  { name: "Star Tours – The Adventures Continue", park: 'hollywood' },
+
+  // --- Animal Kingdom ---
+  { name: 'Avatar Flight of Passage', park: 'animal-kingdom' },
+  { name: 'Expedition Everest', park: 'animal-kingdom' },
+  { name: 'Kilimanjaro Safaris', park: 'animal-kingdom' },
+  { name: "Na'vi River Journey", park: 'animal-kingdom' },
+  { name: 'DINOSAUR', park: 'animal-kingdom' },
+  { name: 'Kali River Rapids', park: 'animal-kingdom' },
+  { name: "TriceraTop Spin", park: 'animal-kingdom' },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let selectedParks = new Set(PARKS.map(p => p.id));
+let selectedRides = [];
+let sortedResult = [];
+let comparisons = 0;
+let estimatedComparisons = 0;
+
+// Merge sort state (iterative, async via user input)
+let mergeQueue = [];
+let mergeLeft, mergeRight, mergeResult;
+let li, ri;
+let pendingResolve = null;
+
+// ============================================================
+// PARK SELECTION
+// ============================================================
+function renderParkToggles() {
+  const el = document.getElementById('park-toggles');
+  el.innerHTML = PARKS.map(p => `
+    <label class="park-toggle">
+      <input type="checkbox" value="${p.id}" checked onchange="togglePark(this)">
+      <span class="check"></span>
+      <span class="park-label">
+        <span class="park-name"><span class="park-dot" style="background:${p.color}"></span>${p.name}</span>
+      </span>
+    </label>
+  `).join('');
+  updateStartBtn();
+}
+
+function togglePark(cb) {
+  if (cb.checked) selectedParks.add(cb.value);
+  else selectedParks.delete(cb.value);
+  updateStartBtn();
+}
+
+function updateStartBtn() {
+  document.getElementById('btn-start').disabled = selectedParks.size === 0;
+}
+
+// ============================================================
+// RIDE SELECTION
+// ============================================================
+function showSelectScreen() {
+  const rides = RIDES.filter(r => selectedParks.has(r.park));
+  const scroll = document.getElementById('ride-scroll');
+  let html = '';
+  const grouped = {};
+  for (const r of rides) {
+    if (!grouped[r.park]) grouped[r.park] = [];
+    grouped[r.park].push(r);
+  }
+  for (const p of PARKS) {
+    if (!grouped[p.id]) continue;
+    html += `<div class="park-group">
+      <div class="park-group-header" style="color:${p.color}">${p.name}</div>
+      <div class="ride-list">`;
+    for (const r of grouped[p.id]) {
+      const uid = rideUid(r);
+      html += `<label class="ride-item">
+        <input type="checkbox" data-uid="${uid}" onchange="updateRideCount()">
+        <span class="check"></span>
+        <span class="ride-name">${r.name}</span>
+      </label>`;
+    }
+    html += `</div></div>`;
+  }
+  scroll.innerHTML = html;
+  updateRideCount();
+  showScreen('select-screen');
+}
+
+function rideUid(r) { return r.park + '::' + r.name; }
+
+function getCheckedUids() {
+  return [...document.querySelectorAll('#ride-scroll input:checked')].map(i => i.dataset.uid);
+}
+
+function updateRideCount() {
+  const n = getCheckedUids().length;
+  document.getElementById('ride-count').textContent = n;
+  document.getElementById('btn-begin').disabled = n < 2;
+}
+
+function selectAllRides() {
+  document.querySelectorAll('#ride-scroll input').forEach(i => i.checked = true);
+  updateRideCount();
+}
+function deselectAllRides() {
+  document.querySelectorAll('#ride-scroll input').forEach(i => i.checked = false);
+  updateRideCount();
+}
+
+// ============================================================
+// COMPARISON ENGINE (Merge Sort)
+// ============================================================
+function getPark(r) { return PARKS.find(p => p.id === r.park); }
+
+async function mergeSort(arr) {
+  if (arr.length <= 1) return arr;
+  const mid = Math.floor(arr.length / 2);
+  const left = await mergeSort(arr.slice(0, mid));
+  const right = await mergeSort(arr.slice(mid));
+  return await merge(left, right);
+}
+
+async function merge(left, right) {
+  const result = [];
+  let l = 0, r = 0;
+  while (l < left.length && r < right.length) {
+    const winner = await askUser(left[l], right[r]);
+    if (winner === 0) {
+      result.push(left[l++]);
+    } else {
+      result.push(right[r++]);
+    }
+  }
+  while (l < left.length) result.push(left[l++]);
+  while (r < right.length) result.push(right[r++]);
+  return result;
+}
+
+function askUser(a, b) {
+  return new Promise(resolve => {
+    comparisons++;
+    updateProgress();
+    showMatchup(a, b);
+    pendingResolve = resolve;
+  });
+}
+
+function showMatchup(a, b) {
+  const parkA = getPark(a), parkB = getPark(b);
+
+  document.getElementById('title-a').textContent = a.name;
+  document.getElementById('park-a').textContent = parkA.name;
+  document.getElementById('park-a').style.background = parkA.color + '33';
+  document.getElementById('park-a').style.color = parkA.color;
+
+  document.getElementById('title-b').textContent = b.name;
+  document.getElementById('park-b').textContent = parkB.name;
+  document.getElementById('park-b').style.background = parkB.color + '33';
+  document.getElementById('park-b').style.color = parkB.color;
+
+  document.getElementById('card-a').style.borderColor = parkA.color;
+  document.getElementById('card-b').style.borderColor = parkB.color;
+
+  // Pop animation
+  document.getElementById('card-a').classList.remove('pop');
+  document.getElementById('card-b').classList.remove('pop');
+  void document.getElementById('card-a').offsetWidth;
+  document.getElementById('card-a').classList.add('pop');
+  document.getElementById('card-b').classList.add('pop');
+}
+
+function pick(choice) {
+  if (!pendingResolve) return;
+  const resolve = pendingResolve;
+  pendingResolve = null;
+  resolve(choice);
+}
+
+function updateProgress() {
+  const pct = Math.min(100, (comparisons / estimatedComparisons) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent =
+    `Comparison ${comparisons} of ~${estimatedComparisons}`;
+}
+
+// ============================================================
+// RESULTS
+// ============================================================
+function showResults(ranked) {
+  const list = document.getElementById('results-list');
+  list.innerHTML = ranked.map((r, i) => {
+    const p = getPark(r);
+    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    return `<div class="result-item">
+      <span class="result-rank ${rankClass}">${i + 1}</span>
+      <div class="result-info">
+        <div class="ride-name">${r.name}</div>
+        <div class="ride-park-tag" style="color:${p.color}">${p.name}</div>
+      </div>
+    </div>`;
+  }).join('');
+  showScreen('results-screen');
+}
+
+function shareResults() {
+  const lines = sortedResult.map((r, i) => {
+    const p = getPark(r);
+    return `${i + 1}. ${r.name} (${p.name})`;
+  });
+  const text = "My Disney Ride Ranking:\n\n" + lines.join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied to clipboard!');
+  }).catch(() => {
+    showToast('Could not copy – try again');
+  });
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function restart() {
+  comparisons = 0;
+  pendingResolve = null;
+  selectedParks = new Set(PARKS.map(p => p.id));
+  renderParkToggles();
+  showScreen('start-screen');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('btn-start').addEventListener('click', () => {
+  showSelectScreen();
+});
+
+document.getElementById('btn-begin').addEventListener('click', async () => {
+  const uids = new Set(getCheckedUids());
+  selectedRides = RIDES.filter(r => uids.has(rideUid(r)));
+
+  // Shuffle to avoid positional bias
+  for (let i = selectedRides.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [selectedRides[i], selectedRides[j]] = [selectedRides[j], selectedRides[i]];
+  }
+
+  const n = selectedRides.length;
+  estimatedComparisons = Math.ceil(n * Math.log2(n));
+  comparisons = 0;
+  updateProgress();
+  showScreen('compare-screen');
+
+  sortedResult = await mergeSort([...selectedRides]);
+  showResults(sortedResult);
+});
+
+renderParkToggles();
+</script>
+</body>
+</html>
