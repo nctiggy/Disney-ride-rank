@@ -54,7 +54,7 @@
     flex-shrink: 0; transition: all 0.15s;
   }
   .park-toggle input:checked + .check { background: var(--accent); border-color: var(--accent); }
-  .park-toggle input:checked + .check::after { content: '✓'; color: #fff; font-size: 14px; font-weight: bold; }
+  .park-toggle input:checked + .check::after { content: '\2713'; color: #fff; font-size: 14px; font-weight: bold; }
   .park-toggle .park-label { text-align: left; }
   .park-toggle .park-name { font-weight: 600; font-size: 0.95rem; }
   .park-toggle .park-dot {
@@ -70,6 +70,49 @@
   }
   .btn:active { transform: scale(0.96); }
   .btn:disabled { opacity: 0.4; pointer-events: none; }
+
+  /* ---- Saved Sessions ---- */
+  .saved-sessions { width: 100%; }
+  .saved-sessions h3 {
+    font-size: 0.9rem; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 10px;
+  }
+  .session-list { display: flex; flex-direction: column; gap: 8px; }
+  .session-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card-bg); padding: 14px 16px; border-radius: var(--radius);
+    cursor: pointer; transition: transform 0.1s;
+  }
+  .session-item:active { transform: scale(0.97); }
+  .session-info { flex: 1; text-align: left; }
+  .session-name { font-weight: 600; font-size: 0.9rem; }
+  .session-meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+  .session-progress-bar {
+    width: 100%; height: 4px; background: #222; border-radius: 2px;
+    margin-top: 6px; overflow: hidden;
+  }
+  .session-progress-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .session-badge {
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; padding: 3px 8px; border-radius: 6px; flex-shrink: 0;
+  }
+  .session-badge.paused { background: #ff8f0033; color: #ff8f00; }
+  .session-badge.done { background: #2e7d3233; color: #4caf50; }
+  .session-delete {
+    background: none; border: none; color: #555; font-size: 1.2rem; cursor: pointer;
+    padding: 4px 8px; border-radius: 6px; transition: color 0.15s; flex-shrink: 0;
+  }
+  .session-delete:hover { color: var(--accent2); }
+  .sessions-divider {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    color: var(--text-dim); font-size: 0.8rem;
+  }
+  .sessions-divider::before, .sessions-divider::after {
+    content: ''; flex: 1; height: 1px; background: #333;
+  }
 
   /* ---- Ride Selection Screen ---- */
   #select-screen { gap: 16px; }
@@ -101,7 +144,7 @@
     flex-shrink: 0; transition: all 0.15s;
   }
   .ride-item input:checked + .check { background: var(--accent); border-color: var(--accent); }
-  .ride-item input:checked + .check::after { content: '✓'; color: #fff; font-size: 12px; font-weight: bold; }
+  .ride-item input:checked + .check::after { content: '\2713'; color: #fff; font-size: 12px; font-weight: bold; }
   .ride-item .ride-name { font-size: 0.9rem; }
 
   .ride-scroll { flex: 1; overflow-y: auto; padding-bottom: 80px; }
@@ -117,7 +160,10 @@
   #compare-screen { gap: 16px; justify-content: center; }
 
   .progress-area { text-align: center; }
-  .progress-label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px; }
+  .progress-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+  }
+  .progress-label { font-size: 0.8rem; color: var(--text-dim); }
   .progress-bar {
     width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden;
   }
@@ -125,6 +171,13 @@
     height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
     border-radius: 3px; transition: width 0.3s ease;
   }
+
+  .pause-btn {
+    background: var(--card-bg); border: 1px solid #444; color: var(--text-dim);
+    padding: 6px 14px; border-radius: 8px; font-size: 0.78rem; cursor: pointer;
+    font-weight: 600; transition: all 0.15s; white-space: nowrap;
+  }
+  .pause-btn:active { transform: scale(0.95); }
 
   .vs-label {
     text-align: center; font-size: 1.5rem; font-weight: 800;
@@ -142,7 +195,9 @@
   .compare-card .ride-park {
     font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
     padding: 4px 10px; border-radius: 20px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 5px;
   }
+  .compare-card .park-icon { font-size: 1rem; line-height: 1; }
   .compare-card .ride-title { font-size: 1.3rem; font-weight: 700; line-height: 1.3; }
   .compare-card.pop { animation: pop 0.25s ease; }
   @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
@@ -171,6 +226,7 @@
   .result-info .ride-park-tag {
     font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
     opacity: 0.7; margin-top: 2px;
+    display: inline-flex; align-items: center; gap: 4px;
   }
 
   .share-area { text-align: center; margin-top: 8px; }
@@ -195,6 +251,12 @@
   <h1>Disney Ride Ranker</h1>
   <p>Pick your favorite between two rides, and we'll build your ultimate ranking.</p>
 
+  <div id="saved-sessions" class="saved-sessions" style="display:none">
+    <h3>Saved Sessions</h3>
+    <div class="session-list" id="session-list"></div>
+    <div class="sessions-divider">or start new</div>
+  </div>
+
   <div class="park-toggles" id="park-toggles"></div>
 
   <button class="btn" id="btn-start" disabled>Choose Your Rides</button>
@@ -217,7 +279,10 @@
 <!-- ===== COMPARE SCREEN ===== -->
 <div id="compare-screen" class="screen">
   <div class="progress-area">
-    <div class="progress-label" id="progress-label">Comparison 0 of ~0</div>
+    <div class="progress-header">
+      <span class="progress-label" id="progress-label">Comparison 0 of ~0</span>
+      <button class="pause-btn" onclick="pauseSession()">Pause</button>
+    </div>
     <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
   </div>
 
@@ -239,7 +304,7 @@
   <h2>Your Disney Ride Ranking</h2>
   <div id="results-list"></div>
   <div class="share-area">
-    <button class="btn" onclick="shareResults()">Copy Results to Clipboard</button>
+    <button class="btn" onclick="shareResults()">Copy Top 10 to Clipboard</button>
     <span class="restart-link" onclick="restart()">Start Over</span>
   </div>
 </div>
@@ -251,16 +316,16 @@
 // RIDE DATA
 // ============================================================
 const PARKS = [
-  { id: 'disneyland', name: 'Disneyland', color: '#1e88e5' },
-  { id: 'california',  name: 'California Adventure', color: '#ff8f00' },
-  { id: 'magic-kingdom', name: 'Magic Kingdom', color: '#7b1fa2' },
-  { id: 'epcot', name: 'EPCOT', color: '#00897b' },
-  { id: 'hollywood', name: 'Hollywood Studios', color: '#c62828' },
-  { id: 'animal-kingdom', name: 'Animal Kingdom', color: '#2e7d32' },
+  { id: 'disneyland', name: 'Disneyland', color: '#1e88e5', icon: '\uD83C\uDFF0' },
+  { id: 'california',  name: 'California Adventure', color: '#ff8f00', icon: '\uD83C\uDFA1' },
+  { id: 'magic-kingdom', name: 'Magic Kingdom', color: '#7b1fa2', icon: '\uD83D\uDC51' },
+  { id: 'epcot', name: 'EPCOT', color: '#00897b', icon: '\uD83C\uDF10' },
+  { id: 'hollywood', name: 'Hollywood Studios', color: '#c62828', icon: '\uD83C\uDFAC' },
+  { id: 'animal-kingdom', name: 'Animal Kingdom', color: '#2e7d32', icon: '\uD83C\uDF33' },
 ];
 
 const RIDES = [
-  // --- Disneyland (34 rides) ---
+  // --- Disneyland (35 rides) ---
   { name: 'Space Mountain', park: 'disneyland' },
   { name: 'Matterhorn Bobsleds', park: 'disneyland' },
   { name: 'Indiana Jones Adventure', park: 'disneyland' },
@@ -269,7 +334,7 @@ const RIDES = [
   { name: 'Big Thunder Mountain Railroad', park: 'disneyland' },
   { name: "Tiana's Bayou Adventure", park: 'disneyland' },
   { name: 'Buzz Lightyear Astro Blasters', park: 'disneyland' },
-  { name: 'Star Tours – The Adventures Continue', park: 'disneyland' },
+  { name: 'Star Tours \u2013 The Adventures Continue', park: 'disneyland' },
   { name: 'Rise of the Resistance', park: 'disneyland' },
   { name: 'Millennium Falcon: Smugglers Run', park: 'disneyland' },
   { name: "It's a Small World", park: 'disneyland' },
@@ -299,7 +364,7 @@ const RIDES = [
 
   // --- California Adventure (18 rides) ---
   { name: 'Radiator Springs Racers', park: 'california' },
-  { name: 'Guardians of the Galaxy – Mission: BREAKOUT!', park: 'california' },
+  { name: 'Guardians of the Galaxy \u2013 Mission: BREAKOUT!', park: 'california' },
   { name: 'Incredicoaster', park: 'california' },
   { name: 'Soarin\' Around the World', park: 'california' },
   { name: 'Grizzly River Run', park: 'california' },
@@ -310,7 +375,7 @@ const RIDES = [
   { name: "Mater's Junkyard Jamboree", park: 'california' },
   { name: "Goofy's Sky School", park: 'california' },
   { name: 'Pixar Pal-A-Round', park: 'california' },
-  { name: 'The Little Mermaid – Ariel\'s Undersea Adventure', park: 'california' },
+  { name: 'The Little Mermaid \u2013 Ariel\'s Undersea Adventure', park: 'california' },
   { name: 'Inside Out Emotional Whirlwind', park: 'california' },
   { name: "Jessie's Critter Carousel", park: 'california' },
   { name: 'Silly Symphony Swings', park: 'california' },
@@ -329,7 +394,7 @@ const RIDES = [
   { name: "Peter Pan's Flight", park: 'magic-kingdom' },
   { name: "It's a Small World", park: 'magic-kingdom' },
   { name: 'Jungle Cruise', park: 'magic-kingdom' },
-  { name: 'Under the Sea – Journey of The Little Mermaid', park: 'magic-kingdom' },
+  { name: 'Under the Sea \u2013 Journey of The Little Mermaid', park: 'magic-kingdom' },
   { name: 'The Barnstormer', park: 'magic-kingdom' },
   { name: 'The Magic Carpets of Aladdin', park: 'magic-kingdom' },
   { name: 'Tomorrowland Speedway', park: 'magic-kingdom' },
@@ -363,7 +428,7 @@ const RIDES = [
   { name: 'Toy Story Mania!', park: 'hollywood' },
   { name: 'Mickey & Minnie\'s Runaway Railway', park: 'hollywood' },
   { name: 'Alien Swirling Saucers', park: 'hollywood' },
-  { name: 'Star Tours – The Adventures Continue', park: 'hollywood' },
+  { name: 'Star Tours \u2013 The Adventures Continue', park: 'hollywood' },
 
   // --- Animal Kingdom (6 rides) ---
   { name: 'Avatar Flight of Passage', park: 'animal-kingdom' },
@@ -382,12 +447,191 @@ let selectedRides = [];
 let sortedResult = [];
 let comparisons = 0;
 let estimatedComparisons = 0;
-
-// Merge sort state (iterative, async via user input)
-let mergeQueue = [];
-let mergeLeft, mergeRight, mergeResult;
-let li, ri;
 let pendingResolve = null;
+let pendingAbort = null;
+let sortAborted = false;
+
+// Session management
+const STORAGE_KEY = 'disney-ranker-sessions';
+let currentSessionId = null;
+let comparisonHistory = [];  // ordered list of choices (0 or 1)
+let replayQueue = [];        // choices left to replay when resuming
+
+// ============================================================
+// SESSION PERSISTENCE
+// ============================================================
+function loadSessions() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch { return []; }
+}
+
+function saveSessions(sessions) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+}
+
+function createSession(rides) {
+  const parkIds = [...new Set(rides.map(r => r.park))];
+  const parkNames = parkIds.map(pid => {
+    const p = PARKS.find(pk => pk.id === pid);
+    return p ? p.icon + ' ' + p.name : pid;
+  });
+  let name;
+  if (parkNames.length <= 2) name = parkNames.join(' & ');
+  else name = parkNames.length + ' Parks';
+
+  const session = {
+    id: 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    name,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    rideUids: rides.map(r => rideUid(r)),
+    history: [],
+    completed: false,
+    result: null,
+    rideCount: rides.length,
+    estimatedComparisons: Math.ceil(rides.length * Math.log2(rides.length)),
+  };
+  const sessions = loadSessions();
+  sessions.unshift(session);
+  saveSessions(sessions);
+  return session;
+}
+
+function updateSession(id, updates) {
+  const sessions = loadSessions();
+  const idx = sessions.findIndex(s => s.id === id);
+  if (idx >= 0) {
+    Object.assign(sessions[idx], updates, { updatedAt: Date.now() });
+    saveSessions(sessions);
+  }
+}
+
+function deleteSession(id) {
+  const sessions = loadSessions().filter(s => s.id !== id);
+  saveSessions(sessions);
+  renderSavedSessions();
+}
+
+function autoSave() {
+  if (!currentSessionId) return;
+  updateSession(currentSessionId, { history: comparisonHistory });
+}
+
+function ridesFromUids(uids) {
+  const rideMap = {};
+  for (const r of RIDES) rideMap[rideUid(r)] = r;
+  return uids.map(uid => rideMap[uid]).filter(Boolean);
+}
+
+// ============================================================
+// SAVED SESSIONS UI
+// ============================================================
+function renderSavedSessions() {
+  const sessions = loadSessions();
+  const container = document.getElementById('saved-sessions');
+  const list = document.getElementById('session-list');
+
+  if (sessions.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = '';
+  list.innerHTML = sessions.map(s => {
+    const date = new Date(s.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const progress = Math.min(100, (s.history.length / (s.estimatedComparisons || 1)) * 100);
+    const badge = s.completed
+      ? '<span class="session-badge done">Done</span>'
+      : '<span class="session-badge paused">Paused</span>';
+    const progressBar = s.completed ? '' :
+      '<div class="session-progress-bar"><div class="session-progress-fill" style="width:' + progress.toFixed(0) + '%"></div></div>';
+    return '<div class="session-item" onclick="resumeSession(\'' + s.id + '\')">' +
+      '<div class="session-info">' +
+        '<div class="session-name">' + escHtml(s.name) + ' (' + s.rideCount + ' rides)</div>' +
+        '<div class="session-meta">' + date + ' &middot; ' + s.history.length + ' comparisons</div>' +
+        progressBar +
+      '</div>' +
+      badge +
+      '<button class="session-delete" onclick="event.stopPropagation(); deleteSession(\'' + s.id + '\')" title="Delete">&times;</button>' +
+    '</div>';
+  }).join('');
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ============================================================
+// RESUME / PAUSE
+// ============================================================
+async function resumeSession(id) {
+  const sessions = loadSessions();
+  const session = sessions.find(s => s.id === id);
+  if (!session) return;
+
+  currentSessionId = id;
+
+  // Completed session — just show results
+  if (session.completed && session.result) {
+    sortedResult = ridesFromUids(session.result);
+    if (sortedResult.length === 0) {
+      showToast('Session data no longer valid');
+      deleteSession(id);
+      return;
+    }
+    showResults(sortedResult);
+    return;
+  }
+
+  // Resume in-progress session
+  selectedRides = ridesFromUids(session.rideUids);
+  if (selectedRides.length < 2) {
+    showToast('Session rides no longer available');
+    deleteSession(id);
+    return;
+  }
+
+  comparisonHistory = session.history ? [...session.history] : [];
+  replayQueue = [...comparisonHistory];
+
+  estimatedComparisons = session.estimatedComparisons || Math.ceil(selectedRides.length * Math.log2(selectedRides.length));
+  comparisons = 0;
+  sortAborted = false;
+
+  showScreen('compare-screen');
+
+  try {
+    sortedResult = await mergeSort([...selectedRides]);
+    updateSession(currentSessionId, {
+      completed: true,
+      result: sortedResult.map(r => rideUid(r)),
+      history: comparisonHistory,
+    });
+    showResults(sortedResult);
+  } catch (e) {
+    // Sort was aborted (paused) — do nothing
+  }
+}
+
+function pauseSession() {
+  sortAborted = true;
+  autoSave();
+  if (pendingAbort) {
+    pendingAbort('aborted');
+  }
+  pendingResolve = null;
+  pendingAbort = null;
+  currentSessionId = null;
+  comparisonHistory = [];
+  replayQueue = [];
+  renderSavedSessions();
+  renderParkToggles();
+  showScreen('start-screen');
+  showToast('Session saved');
+}
 
 // ============================================================
 // PARK SELECTION
@@ -399,7 +643,7 @@ function renderParkToggles() {
       <input type="checkbox" value="${p.id}" checked onchange="togglePark(this)">
       <span class="check"></span>
       <span class="park-label">
-        <span class="park-name"><span class="park-dot" style="background:${p.color}"></span>${p.name}</span>
+        <span class="park-name"><span class="park-dot" style="background:${p.color}"></span>${p.icon} ${p.name}</span>
       </span>
     </label>
   `).join('');
@@ -431,7 +675,7 @@ function showSelectScreen() {
   for (const p of PARKS) {
     if (!grouped[p.id]) continue;
     html += `<div class="park-group">
-      <div class="park-group-header" style="color:${p.color}">${p.name}</div>
+      <div class="park-group-header" style="color:${p.color}">${p.icon} ${p.name}</div>
       <div class="ride-list">`;
     for (const r of grouped[p.id]) {
       const uid = rideUid(r);
@@ -470,11 +714,12 @@ function deselectAllRides() {
 }
 
 // ============================================================
-// COMPARISON ENGINE (Merge Sort)
+// COMPARISON ENGINE (Merge Sort with history tracking)
 // ============================================================
 function getPark(r) { return PARKS.find(p => p.id === r.park); }
 
 async function mergeSort(arr) {
+  if (sortAborted) throw new Error('aborted');
   if (arr.length <= 1) return arr;
   const mid = Math.floor(arr.length / 2);
   const left = await mergeSort(arr.slice(0, mid));
@@ -483,9 +728,11 @@ async function mergeSort(arr) {
 }
 
 async function merge(left, right) {
+  if (sortAborted) throw new Error('aborted');
   const result = [];
   let l = 0, r = 0;
   while (l < left.length && r < right.length) {
+    if (sortAborted) throw new Error('aborted');
     const winner = await askUser(left[l], right[r]);
     if (winner === 0) {
       result.push(left[l++]);
@@ -499,11 +746,23 @@ async function merge(left, right) {
 }
 
 function askUser(a, b) {
-  return new Promise(resolve => {
+  if (sortAborted) return Promise.reject(new Error('aborted'));
+
+  // Replay from saved history
+  if (replayQueue.length > 0) {
+    const choice = replayQueue.shift();
+    comparisons++;
+    updateProgress();
+    return Promise.resolve(choice);
+  }
+
+  // Ask user for new comparison
+  return new Promise((resolve, reject) => {
     comparisons++;
     updateProgress();
     showMatchup(a, b);
     pendingResolve = resolve;
+    pendingAbort = reject;
   });
 }
 
@@ -511,12 +770,12 @@ function showMatchup(a, b) {
   const parkA = getPark(a), parkB = getPark(b);
 
   document.getElementById('title-a').textContent = a.name;
-  document.getElementById('park-a').textContent = parkA.name;
+  document.getElementById('park-a').innerHTML = '<span class="park-icon">' + parkA.icon + '</span> ' + parkA.name;
   document.getElementById('park-a').style.background = parkA.color + '33';
   document.getElementById('park-a').style.color = parkA.color;
 
   document.getElementById('title-b').textContent = b.name;
-  document.getElementById('park-b').textContent = parkB.name;
+  document.getElementById('park-b').innerHTML = '<span class="park-icon">' + parkB.icon + '</span> ' + parkB.name;
   document.getElementById('park-b').style.background = parkB.color + '33';
   document.getElementById('park-b').style.color = parkB.color;
 
@@ -533,8 +792,11 @@ function showMatchup(a, b) {
 
 function pick(choice) {
   if (!pendingResolve) return;
+  comparisonHistory.push(choice);
+  autoSave();
   const resolve = pendingResolve;
   pendingResolve = null;
+  pendingAbort = null;
   resolve(choice);
 }
 
@@ -557,7 +819,7 @@ function showResults(ranked) {
       <span class="result-rank ${rankClass}">${i + 1}</span>
       <div class="result-info">
         <div class="ride-name">${r.name}</div>
-        <div class="ride-park-tag" style="color:${p.color}">${p.name}</div>
+        <div class="ride-park-tag" style="color:${p.color}">${p.icon} ${p.name}</div>
       </div>
     </div>`;
   }).join('');
@@ -565,15 +827,16 @@ function showResults(ranked) {
 }
 
 function shareResults() {
-  const lines = sortedResult.map((r, i) => {
+  const top = sortedResult.slice(0, 10);
+  const lines = top.map((r, i) => {
     const p = getPark(r);
-    return `${i + 1}. ${r.name} (${p.name})`;
+    return `${i + 1}. ${r.name} (${p.icon} ${p.name})`;
   });
-  const text = "My Disney Ride Ranking:\n\n" + lines.join('\n');
+  const text = "My Disney Ride Ranking (Top 10):\n\n" + lines.join('\n');
   navigator.clipboard.writeText(text).then(() => {
     showToast('Copied to clipboard!');
   }).catch(() => {
-    showToast('Could not copy – try again');
+    showToast('Could not copy \u2013 try again');
   });
 }
 
@@ -596,8 +859,14 @@ function showToast(msg) {
 function restart() {
   comparisons = 0;
   pendingResolve = null;
+  pendingAbort = null;
+  currentSessionId = null;
+  comparisonHistory = [];
+  replayQueue = [];
+  sortAborted = false;
   selectedParks = new Set(PARKS.map(p => p.id));
   renderParkToggles();
+  renderSavedSessions();
   showScreen('start-screen');
 }
 
@@ -621,14 +890,32 @@ document.getElementById('btn-begin').addEventListener('click', async () => {
   const n = selectedRides.length;
   estimatedComparisons = Math.ceil(n * Math.log2(n));
   comparisons = 0;
+  comparisonHistory = [];
+  replayQueue = [];
+  sortAborted = false;
+
+  // Create a new session
+  const session = createSession(selectedRides);
+  currentSessionId = session.id;
+
   updateProgress();
   showScreen('compare-screen');
 
-  sortedResult = await mergeSort([...selectedRides]);
-  showResults(sortedResult);
+  try {
+    sortedResult = await mergeSort([...selectedRides]);
+    updateSession(currentSessionId, {
+      completed: true,
+      result: sortedResult.map(r => rideUid(r)),
+      history: comparisonHistory,
+    });
+    showResults(sortedResult);
+  } catch (e) {
+    // Sort was aborted (paused) — do nothing
+  }
 });
 
 renderParkToggles();
+renderSavedSessions();
 </script>
 </body>
 </html>
